@@ -59,7 +59,7 @@ def train_and_log_model(X_train, X_test, y_train, y_test):
     mlflow.set_tracking_uri("file:./mlruns")
     mlflow.set_experiment("Regression_Model_Tracking")
 
-    with mlflow.start_run(run_name="RandomForest_HousingPrice"):
+    with mlflow.start_run(run_name="RandomForest_HousingPrice", nested=True):
         model = RandomForestRegressor(n_estimators=100, random_state=42)
         model.fit(X_train, y_train)
 
