@@ -23,8 +23,8 @@ jobs:
           activate-environment: mlflow-env
 
       - name: Install MLflow
-        run: pip install mlflow
+        run: pip install --upgrade mlflow
 
       - name: Run MLflow Project
-        run: mlflow run ./MLProject -P data_path=houseprice_preprocessing
+        run: mlflow run ./MLProject --env-manager=local -P data_path=houseprice_preprocessing
 
