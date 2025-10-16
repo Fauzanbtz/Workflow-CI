@@ -12,6 +12,9 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error, r2_score
 import argparse
 import os
+import warnings
+
+warnings.filterwarnings("ignore", category=UserWarning)
 
 
 # ====================================================
@@ -30,6 +33,10 @@ def load_and_prepare_data(base_path: str):
     test_data = pd.read_csv(test_path)
 
     target_column = "Price (in rupees)"
+
+    # Pastikan kolom target ada
+    if target_column not in train_data.columns or target_column not in test_data.columns:
+        raise KeyError(f"❌ Kolom target '{target_column}' tidak ditemukan dalam dataset.")
 
     # Hapus baris tanpa target
     train_data = train_data.dropna(subset=[target_column])
@@ -56,11 +63,24 @@ def load_and_prepare_data(base_path: str):
 # 2️⃣ Training Model + MLflow Tracking
 # ====================================================
 def train_and_log_model(X_train, X_test, y_train, y_test):
+    # Pastikan tracking folder aman
+    os.makedirs("mlruns", exist_ok=True)
     mlflow.set_tracking_uri("file:./mlruns")
+
+    # Pastikan experiment sudah di-set
     mlflow.set_experiment("Regression_Model_Tracking")
 
+    # Hindari error nested run (karena CI atau MLproject bisa otomatis buat run)
+    active_run = mlflow.active_run()
+    if active_run is None:
+        mlflow.start_run(run_name="RandomForest_HousingPrice")
+
+    # Gunakan context manager agar otomatis tertutup dengan aman
     with mlflow.start_run(run_name="RandomForest_HousingPrice", nested=True):
-        model = RandomForestRegressor(n_estimators=100, random_state=42)
+        # Inisialisasi dan latih model
+        model = RandomForestRegressor(
+            n_estimators=100, random_state=42, n_jobs=-1
+        )
         model.fit(X_train, y_train)
 
         # Prediksi dan evaluasi
@@ -72,12 +92,19 @@ def train_and_log_model(X_train, X_test, y_train, y_test):
         print(f"RMSE: {rmse:.2f}")
         print(f"R² Score: {r2:.4f}")
 
-        # Log hasil dan model
+        # Log hasil dan model ke MLflow
+        mlflow.log_param("model_type", "RandomForestRegressor")
+        mlflow.log_param("n_estimators", 100)
+        mlflow.log_param("random_state", 42)
         mlflow.log_metric("rmse", rmse)
         mlflow.log_metric("r2", r2)
-        mlflow.sklearn.log_model(model, "model")
+        mlflow.sklearn.log_model(model, artifact_path="model")
 
         print("\n✅ Model berhasil dilatih dan dicatat di MLflow!")
+
+    # Tutup run aktif jika dibuat secara manual
+    if active_run is None:
+        mlflow.end_run()
 
 
 # ====================================================
@@ -93,5 +120,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    X_train, X_test, y_train, y_test = load_and_prepare_data(args.data_path)
-    train_and_log_model(X_train, X_test, y_train, y_test)
+    try:
+        X_train, X_test, y_train, y_test = load_and_prepare_data(args.data_path)
+        train_and_log_model(X_train, X_test, y_train, y_test)
+    except Exception as e:
+        print(f"\n❌ Terjadi kesalahan: {e}")
+        exit(1)
