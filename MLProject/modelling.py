@@ -34,11 +34,10 @@ def load_and_prepare_data(base_path: str):
 
     target_column = "Price (in rupees)"
 
-    # Pastikan kolom target ada
     if target_column not in train_data.columns or target_column not in test_data.columns:
         raise KeyError(f"❌ Kolom target '{target_column}' tidak ditemukan dalam dataset.")
 
-    # Hapus baris tanpa target
+    # Drop baris tanpa target
     train_data = train_data.dropna(subset=[target_column])
     test_data = test_data.dropna(subset=[target_column])
 
@@ -63,27 +62,23 @@ def load_and_prepare_data(base_path: str):
 # 2️⃣ Training Model + MLflow Tracking
 # ====================================================
 def train_and_log_model(X_train, X_test, y_train, y_test):
-    # Pastikan tracking folder aman
     os.makedirs("mlruns", exist_ok=True)
     mlflow.set_tracking_uri("file:./mlruns")
-
-    # Pastikan experiment sudah di-set
     mlflow.set_experiment("Regression_Model_Tracking")
 
-    # Hindari error nested run (karena CI atau MLproject bisa otomatis buat run)
+    # Periksa apakah sudah ada active run (misal dari mlflow run .)
     active_run = mlflow.active_run()
-    if active_run is None:
-        mlflow.start_run(run_name="RandomForest_HousingPrice")
 
-    # Gunakan context manager agar otomatis tertutup dengan aman
-    with mlflow.start_run(run_name="RandomForest_HousingPrice", nested=True):
-        # Inisialisasi dan latih model
-        model = RandomForestRegressor(
-            n_estimators=100, random_state=42, n_jobs=-1
-        )
+    if active_run:
+        print(f"⚙️ MLflow run aktif terdeteksi (run_id: {active_run.info.run_id}) — tidak membuat run baru.")
+        run_ctx = mlflow.start_run(run_id=active_run.info.run_id)
+    else:
+        run_ctx = mlflow.start_run(run_name="RandomForest_HousingPrice")
+
+    with run_ctx:
+        model = RandomForestRegressor(n_estimators=100, random_state=42, n_jobs=-1)
         model.fit(X_train, y_train)
 
-        # Prediksi dan evaluasi
         y_pred = model.predict(X_test)
         rmse = np.sqrt(mean_squared_error(y_test, y_pred))
         r2 = r2_score(y_test, y_pred)
@@ -92,18 +87,16 @@ def train_and_log_model(X_train, X_test, y_train, y_test):
         print(f"RMSE: {rmse:.2f}")
         print(f"R² Score: {r2:.4f}")
 
-        # Log hasil dan model ke MLflow
         mlflow.log_param("model_type", "RandomForestRegressor")
         mlflow.log_param("n_estimators", 100)
-        mlflow.log_param("random_state", 42)
         mlflow.log_metric("rmse", rmse)
         mlflow.log_metric("r2", r2)
-        mlflow.sklearn.log_model(model, artifact_path="model")
+        mlflow.sklearn.log_model(model, "model")
 
         print("\n✅ Model berhasil dilatih dan dicatat di MLflow!")
 
-    # Tutup run aktif jika dibuat secara manual
-    if active_run is None:
+    # Tutup run jika kita yang buka
+    if not active_run:
         mlflow.end_run()
 
 
