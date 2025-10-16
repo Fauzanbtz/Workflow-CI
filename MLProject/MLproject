@@ -7,14 +7,3 @@ entry_points:
     parameters:
       data_path: {type: str, default: "houseprice_preprocessing"}
     command: "python modelling.py --data_path {data_path}"
-
-
-python_env:
-  python: "3.10"
-  dependencies:
-    - mlflow
-    - pandas
-    - numpy
-    - scikit-learn
-    - matplotlib
-    - seaborn
