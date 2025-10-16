@@ -1,0 +1,34 @@
+name: Retrain Model
+
+on:
+  push:
+    paths:
+      - 'MLProject/**'
+  pull_request:
+    paths:
+      - 'MLProject/**'
+
+jobs:
+  retrain:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Miniconda
+      uses: conda-incubator/setup-miniconda@v3
+      with:
+        activate-environment: ml-env
+        environment-file: MLProject/conda.yaml
+        auto-activate-base: false
+
+    - name: Install MLflow
+      run: |
+        conda activate ml-env
+        pip install mlflow
+
+    - name: Run MLflow Project
+      run: |
+        conda activate ml-env
+        mlflow run MLProject
