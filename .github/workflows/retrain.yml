@@ -1,34 +1,29 @@
-name: Retrain Model
+name: Retrain ML Model
 
 on:
   push:
-    paths:
-      - 'MLProject/**'
+    branches:
+      - main
   pull_request:
-    paths:
-      - 'MLProject/**'
+    branches:
+      - main
 
 jobs:
   retrain:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Setup Miniconda
-      uses: conda-incubator/setup-miniconda@v3
-      with:
-        activate-environment: ml-env
-        environment-file: MLProject/conda.yaml
-        auto-activate-base: false
+      - name: Set up Miniconda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          environment-file: MLProject/conda.yaml
+          activate-environment: mlflow-env
 
-    - name: Install MLflow
-      run: |
-        conda activate ml-env
-        pip install mlflow
+      - name: Install MLflow
+        run: pip install mlflow
 
-    - name: Run MLflow Project
-      run: |
-        conda activate ml-env
-        mlflow run MLProject
+      - name: Run MLflow Project
+        run: mlflow run MLProject -P data_path=houseprice_preprocessing
