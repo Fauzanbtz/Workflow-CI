@@ -13,30 +13,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 🧩 1. Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 🧠 2. Setup Miniconda dan environment MLflow
       - name: Set up Miniconda
         uses: conda-incubator/setup-miniconda@v3
         with:
-          activate-environment: mlflow-env
           environment-file: MLProject/conda.yaml
-          python-version: 3.10
-          auto-activate-base: false
+          activate-environment: mlflow-env
 
-      # 🔧 3. Install MLflow di environment
       - name: Install MLflow
-        shell: bash -l {0}
-        run: |
-          conda activate mlflow-env
-          pip install --upgrade mlflow
+        run: pip install --upgrade mlflow
 
-      # 🚀 4. Jalankan MLflow Project
       - name: Run MLflow Project
-        shell: bash -l {0}
-        run: |
-          conda activate mlflow-env
-          mlflow run ./MLProject --env-manager=local -P data_path=houseprice_preprocessing
+        run: mlflow run ./MLProject --env-manager=local -P data_path=houseprice_preprocessing
 
