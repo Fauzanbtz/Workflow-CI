@@ -26,5 +26,9 @@ jobs:
         run: pip install --upgrade mlflow
 
       - name: Run MLflow Project
-        run: mlflow run . -P data_path=houseprice_preprocessing
+        run: |
+            cd MLProject
+            echo "🚀 Running MLflow project..."
+            mlflow run . -P data_path=houseprice_preprocessing
+         
 
