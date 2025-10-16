@@ -1,5 +1,7 @@
-name: Regression_Model_Tracking
+name: houseprice-retrain
+
 conda_env: conda.yaml
+
 entry_points:
   main:
     parameters:
