@@ -18,7 +18,7 @@ from sklearn.preprocessing import LabelEncoder
 # 1. Load dan Persiapan Data
 # ====================================================
 train_data = pd.read_csv('houseprice_preprocessing/train_preprocessed.csv')
-test_data = pd.read_csv('_preprocessing/test_preprocessed.csv')
+test_data = pd.read_csv('houseprice_preprocessing/test_preprocessed.csv')
 
 target_column = 'Price (in rupees)'
 
