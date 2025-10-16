@@ -1,7 +1,13 @@
-name: ml-env
+name: mlflow-env
 channels:
   - defaults
 dependencies:
   - python=3.10
-  - scikit-learn
-  - mlflow
+  - pip
+  - pip:
+      - mlflow
+      - pandas
+      - numpy
+      - scikit-learn
+      - matplotlib
+      - seaborn
