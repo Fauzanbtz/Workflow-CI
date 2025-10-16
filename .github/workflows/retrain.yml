@@ -27,8 +27,11 @@ jobs:
 
       - name: Run MLflow Project
         run: |
-            cd MLProject
-            echo "🚀 Running MLflow project..."
-            mlflow run . -P data_path=houseprice_preprocessing
+              cd MLProject
+              conda init bash
+              source ~/.bashrc
+              echo "🚀 Running MLflow project..."
+              mlflow run . -P data_path=houseprice_preprocessing
+              cd ..
          
 
