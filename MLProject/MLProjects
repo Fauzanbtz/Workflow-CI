@@ -1,4 +1,4 @@
-name: regression_training
+name: Regression_Model_Tracking
 conda_env: conda.yaml
 entry_points:
   main:
