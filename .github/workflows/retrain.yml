@@ -26,5 +26,5 @@ jobs:
         run: pip install --upgrade mlflow
 
       - name: Run MLflow Project
-        run: mlflow run ./MLProject --env-manager=local -P data_path=houseprice_preprocessing
+        run: mlflow run . -P data_path=houseprice_preprocessing
 
